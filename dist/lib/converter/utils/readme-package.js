@@ -22,7 +22,7 @@ var ReadmePackage = (function () {
         var readmeContents = FS.readFileSync(fullPath, 'utf-8');
         var mdFiles = markdownLinkExtractor(readmeContents).filter(function (link) {
             return !link.match(/^(ftp|https?):\/\/.*/) &&
-                link.match(/.*\.md$/);
+                link.match(/.*\.(?:md|MD|mD|Md)$/);
         });
         pages.push(new readme_1.default(readmeContents, Path.join(basePath, fileName), isRoot));
         mdFiles.forEach(function (filePath) {
@@ -50,7 +50,7 @@ var ReadmePackage = (function () {
             var matchUrl = '(?:./)?' + escapeStringRegexp(relativePath) + '(?:#[^\\)\\>]*)?';
             var matchLinks = new RegExp(" {0,3}\\[(?:\\\\[\\[\\]]|[^\\[\\]])+\\]:?" +
                 (" *\\n? *<?(?:" + matchUrl + ")?>?(?:(?: *\\n? *| *\\n *)((?:\"(?:\\\\\"|[^\"]|\"[^\"\\n]*\")*\"|'\\n?") +
-                ("(?:[^'\\n]+\\n?)*'|\\(" + matchUrl + "\\))))? *(?:\\n+|$)"), 'g');
+                ("(?:[^'\\n]+\\n?)*'|\\(" + matchUrl + "\\))))"), 'g');
             var content = otherReadme.content;
             var matches = content.match(matchLinks);
             if (!matches) {

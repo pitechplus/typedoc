@@ -55,7 +55,7 @@ export default class ReadmePackage {
         // Get MD file links.
         const mdFiles = markdownLinkExtractor(readmeContents).filter((link: string) => {
             return !link.match(/^(ftp|https?):\/\/.*/) &&
-                link.match(/.*\.md$/);
+                link.match(/.*\.(?:md|MD|mD|Md)$/);
         });
 
         pages.push(new Readme(readmeContents, Path.join(basePath, fileName), isRoot));
@@ -105,7 +105,7 @@ export default class ReadmePackage {
             const matchUrl = '(?:./)?' + escapeStringRegexp(relativePath) + '(?:#[^\\)\\>]*)?';
             const matchLinks = new RegExp(` {0,3}\\[(?:\\\\[\\[\\]]|[^\\[\\]])+\\]:?` +
                 ` *\\n? *<?(?:${matchUrl})?>?(?:(?: *\\n? *| *\\n *)((?:"(?:\\\\"|[^"]|"[^"\\n]*")*"|'\\n?` +
-                `(?:[^'\\n]+\\n?)*'|\\(${matchUrl}\\))))? *(?:\\n+|$)`, 'g');
+                `(?:[^'\\n]+\\n?)*'|\\(${matchUrl}\\))))`, 'g');
 
             let content = otherReadme.content;
             const matches = content.match(matchLinks);

@@ -14,27 +14,30 @@ var ReadmePackage = (function () {
         this.loadDefinitions(mdPages, Path.dirname(readmePath), Path.basename(readmePath));
         return new this(mdPages);
     };
-    ReadmePackage.loadDefinitions = function (pages, basePath, relativePath, isRoot) {
+    ReadmePackage.loadDefinitions = function (pages, currentDirectory, fileName, basePath, isRoot) {
         var _this = this;
+        if (basePath === void 0) { basePath = ''; }
         if (isRoot === void 0) { isRoot = true; }
-        var fullPath = Path.join(basePath, relativePath);
+        var fullPath = Path.join(currentDirectory, fileName);
         var readmeContents = FS.readFileSync(fullPath, 'utf-8');
         var mdFiles = markdownLinkExtractor(readmeContents).filter(function (link) {
             return !link.match(/^(ftp|https?):\/\/.*/) &&
                 link.match(/.*\.md$/);
         });
-        pages.push(new readme_1.default(readmeContents, relativePath, isRoot));
+        pages.push(new readme_1.default(readmeContents, Path.join(basePath, fileName), isRoot));
         mdFiles.forEach(function (filePath) {
-            var fileFullPath = Path.join(basePath, filePath);
+            var fileFullPath = Path.join(currentDirectory, filePath);
             var normalizedPath = Path.normalize(filePath);
+            var normalizedBasePath = Path.join(basePath, filePath);
+            var newBasePath = Path.join(basePath, Path.dirname(filePath));
             if (!FS.existsSync(fileFullPath)) {
                 return;
             }
-            if (normalizedPath === Path.normalize(relativePath)) {
+            if (normalizedPath === Path.normalize(fileName)) {
                 return;
             }
-            if (!pages.find(function (readme) { return readme.path === normalizedPath; })) {
-                _this.loadDefinitions(pages, basePath, normalizedPath, false);
+            if (!pages.find(function (readme) { return readme.path === normalizedBasePath; })) {
+                _this.loadDefinitions(pages, Path.dirname(fileFullPath), Path.basename(fileFullPath), newBasePath, false);
             }
         });
     };
@@ -42,18 +45,20 @@ var ReadmePackage = (function () {
         if (!this.definitions.find(function (r) { return readme === r; })) {
             return;
         }
-        var matchUrl = '(?:./)?' + escapeStringRegexp(readme.path) + '(?:#[^\\)\\>]*)?';
-        var matchLinks = new RegExp(" {0,3}\\[(?:\\\\[\\[\\]]|[^\\[\\]])+\\]:?" +
-            (" *\\n? *<?(?:" + matchUrl + ")?>?(?:(?: *\\n? *| *\\n *)((?:\"(?:\\\\\"|[^\"]|\"[^\"\\n]*\")*\"|'\\n?") +
-            ("(?:[^'\\n]+\\n?)*'|\\(" + matchUrl + "\\))))? *(?:\\n+|$)"), 'g');
         this.definitions.forEach(function (otherReadme) {
+            var relativePath = Path.join(Path.relative(Path.dirname(otherReadme.path), Path.dirname(readme.path)), Path.basename(readme.path));
+            var matchUrl = '(?:./)?' + escapeStringRegexp(relativePath) + '(?:#[^\\)\\>]*)?';
+            var matchLinks = new RegExp(" {0,3}\\[(?:\\\\[\\[\\]]|[^\\[\\]])+\\]:?" +
+                (" *\\n? *<?(?:" + matchUrl + ")?>?(?:(?: *\\n? *| *\\n *)((?:\"(?:\\\\\"|[^\"]|\"[^\"\\n]*\")*\"|'\\n?") +
+                ("(?:[^'\\n]+\\n?)*'|\\(" + matchUrl + "\\))))? *(?:\\n+|$)"), 'g');
             var content = otherReadme.content;
             var matches = content.match(matchLinks);
             if (!matches) {
                 return;
             }
+            var newRelativePath = Path.join(Path.relative(Path.dirname(otherReadme.path), Path.dirname(newPath)), Path.basename(newPath));
             Array.from(new Set(matches)).forEach(function (match) {
-                var replacement = match.replace(readme.path, newPath);
+                var replacement = match.replace(relativePath, newRelativePath);
                 content = content.replace(match, replacement);
             });
             otherReadme.content = content;

@@ -43,6 +43,19 @@ var MinimalTheme = (function (_super) {
         project.children.forEach(function (child) {
             DefaultTheme_1.DefaultTheme.applyAnchorUrl(child, project);
         });
+        if (project.readmePages) {
+            project.readmePages.updatePaths(function (readme) {
+                return readme.path + '.html';
+            });
+            project.readmePages.updatePath(project.readmePages.getRoot(), 'index.html');
+            project.readmePages.getDefinitions().forEach(function (readme) {
+                if (readme.isRoot) {
+                    return;
+                }
+                urls.push(new UrlMapping_1.UrlMapping(readme.path, readme, 'readme.hbs'));
+            });
+            project.readme = project.readmePages.getRoot().content;
+        }
         return urls;
     };
     MinimalTheme.prototype.onRendererBeginPage = function (page) {

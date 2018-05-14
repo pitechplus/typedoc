@@ -51,17 +51,19 @@ var DefaultTheme = (function (_super) {
             urls.push(new UrlMapping_1.UrlMapping('globals.html', entryPoint, 'reflection.hbs'));
             urls.push(new UrlMapping_1.UrlMapping('index.html', project, 'index.hbs'));
         }
-        project.readmePages.updatePaths(function (readme) {
-            return readme.path + '.html';
-        });
-        project.readmePages.updatePath(project.readmePages.getRoot(), 'index.html');
-        project.readmePages.getDefinitions().forEach(function (readme) {
-            if (readme.isRoot) {
-                return;
-            }
-            urls.push(new UrlMapping_1.UrlMapping(readme.path, readme, 'readme.hbs'));
-        });
-        project.readme = project.readmePages.getRoot().content;
+        if (project.readmePages) {
+            project.readmePages.updatePaths(function (readme) {
+                return readme.path + '.html';
+            });
+            project.readmePages.updatePath(project.readmePages.getRoot(), 'index.html');
+            project.readmePages.getDefinitions().forEach(function (readme) {
+                if (readme.isRoot) {
+                    return;
+                }
+                urls.push(new UrlMapping_1.UrlMapping(readme.path, readme, 'readme.hbs'));
+            });
+            project.readme = project.readmePages.getRoot().content;
+        }
         if (entryPoint.children) {
             entryPoint.children.forEach(function (child) {
                 if (child instanceof index_1.DeclarationReflection) {
